@@ -17,14 +17,18 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 
 api_urlpatterns = []
 
-auth_urlpatterns = []
+auth_urlpatterns = [
+    path("",include('accounts.urls')),
+    path("login/",include("rest_framework.urls"))
+]
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("auth/",include(auth_urlpatterns))
 ]
 
 if settings.DEBUG:

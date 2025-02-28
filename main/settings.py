@@ -40,6 +40,9 @@ INSTALLED_APPS = [
     #local
     "accounts",
     "products",
+    "cart",
+    # 3rd party
+    "rest_framework",
 ]
 
 MIDDLEWARE = [
@@ -140,3 +143,4 @@ AUTH_USER_MODEL = 'accounts.User'
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
+

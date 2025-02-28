@@ -8,6 +8,9 @@ from django.utils.deconstruct import deconstructible
 
 @deconstructible
 class GenerateProfileImagePath:
+    """
+    Generates a proper file path to store the profile photo of a user.
+    """
     def __init__(self):
         pass
 

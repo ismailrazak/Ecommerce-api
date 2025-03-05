@@ -19,7 +19,9 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 
-api_urlpatterns = []
+api_urlpatterns = [
+    path("products/",include('products.urls'))
+]
 
 auth_urlpatterns = [
     path("",include('accounts.urls')),
@@ -28,7 +30,8 @@ auth_urlpatterns = [
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("auth/",include(auth_urlpatterns))
+    path("auth/",include(auth_urlpatterns)),
+    path("",include(api_urlpatterns)),
 ]
 
 if settings.DEBUG:

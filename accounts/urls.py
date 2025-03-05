@@ -7,3 +7,4 @@ urlpatterns = [
     path('register/seller',views.SellerRegistrationView.as_view()),
     path('account_detail/<str:username>',views.AccountDetailView.as_view()),
 ]
+

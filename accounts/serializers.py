@@ -37,7 +37,7 @@ class SellerRegistrationSerializer(UserRegistrationSerializer):
 
     def create(self, validated_data):
 
-        user=super().save(validated_data)
+        user=super().create(validated_data)
         seller_group = Group.objects.get(name='sellers')
         user.groups.add(seller_group)
         return user

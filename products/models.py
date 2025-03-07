@@ -46,7 +46,6 @@ class Product(models.Model):
     discounted_price=models.FloatField(blank=True,null=True)
     sold_by = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='seller_products')
     stock = models.PositiveIntegerField(default=0)
-    bought_by = models.ManyToManyField(settings.AUTH_USER_MODEL,related_name='orders',blank=True,null=True)
 
     def save(self,*args,**kwargs):
         if self.discount_percentage:

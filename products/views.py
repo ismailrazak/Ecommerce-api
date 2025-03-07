@@ -6,6 +6,7 @@ from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, CreateMode
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet, GenericViewSet
 
+from cart.models import ProductQuantity
 from products.models import Product
 from products.permissions import IsCustomerOrNone, IsSellerOrNone
 from products.serializers import CustomerProductSerializer, SellerProductSerializer
@@ -21,16 +22,37 @@ class CustomerProductViewSet(ReadOnlyModelViewSet):
         product=self.get_object()
         if product.stock > 0:
             cart = request.user.cart
-            cart.products.add(product)
-            cart.save()
+            cart_product =cart.products.filter(id=pk).first()
+            if cart_product:
+                product_quantity=cart.product_quantity.get(product=product)
+                product_quantity.quantity=F('quantity')+1
+                product_quantity.save()
+            else:
+                cart.products.add(product)
+                cart.save()
             product.stock=F('stock')-1
             product.save()
             return Response({'success':'The product has been successfully added to your cart.'},status=status.HTTP_200_OK)
         return Response({'error':'The product is out of stock.'},status=status.HTTP_400_BAD_REQUEST)
 
+    @action(detail=True, methods=['get', ])
+    def remove_item_from_cart(self, request, pk=None):
+        cart = self.request.user.cart
+        product=cart.products.filter(id=pk).first()
+        if product:
+            product_quantity=cart.product_quantity.get(product=product)
+            product_quantity.quantity =F('quantity')-1
+            product_quantity.save()
+            product.stock=F('stock')+1
+            product.save()
+            return Response({'success':'Item has been removed from your cart.'},status=status.HTTP_200_OK)
+        return Response({'error':'Item is not present in your cart.'},status=status.HTTP_400_BAD_REQUEST)
+
     @action(detail=True,methods=['get',])
     def buy_now(self,request,pk=None):
         pass
+
+
 
 class SellerProductViewSet(ModelViewSet):
     serializer_class = SellerProductSerializer
@@ -40,4 +62,9 @@ class SellerProductViewSet(ModelViewSet):
         queryset = Product.objects.filter(sold_by=self.request.user)
         return queryset
 
+    def perform_create(self, serializer):
+        serializer.save(sold_by=self.request.user)
 
+#todo fix if customer deleted then return item back to stock
+
+#TODO fix profiles pic not deleting when user is deleted

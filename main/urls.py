@@ -20,7 +20,8 @@ from django.contrib import admin
 from django.urls import path, include
 
 api_urlpatterns = [
-    path("products/",include('products.urls'))
+    path("products/",include('products.urls')),
+    path("cart/",include('cart.urls'))
 ]
 
 auth_urlpatterns = [

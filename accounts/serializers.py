@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from cart.models import Cart
+from cart.serializers import ProductQuantitySerializer
 from products.models import Product
 from django.contrib.auth.models import Group
 
@@ -59,12 +60,16 @@ class OrderSerializer(serializers.ModelSerializer):
         fields = ['name','price']
 
 class CustomerAccountDetailSerializer(serializers.ModelSerializer):
-    orders = OrderSerializer(read_only=True,many=True)
+    orders = serializers.SerializerMethodField()
     # here orders name is  same as related_name 'orders' of product model . Thats why it works
     class Meta:
         model = get_user_model()
         fields  =['id','username','first_name','last_name', 'address', 'profile_photo', "email",'orders']
 
+    def get_orders(self,obj):
+        cart= obj.cart
+        products_ordered = cart.product_quantity.filter(bought_item=True)
+        return ProductQuantitySerializer(products_ordered,many=True).data
 
 class SellerAccountDetailSerializer(serializers.ModelSerializer):
     products = OrderSerializer(read_only=True, many=True,source='seller_products')

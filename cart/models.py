@@ -16,6 +16,12 @@ class ProductQuantity(models.Model):
     quantity = models.PositiveIntegerField(default=1)
     added_on = models.DateTimeField(auto_now=True)
     bought_item = models.BooleanField(default=False)
+    total_price = models.FloatField(blank=True,null=True)
+
+    def save(self,*args,**kwargs):
+        price=self.product.price
+        self.total_price=price*self.quantity
+        super().save(*args,**kwargs)
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=['cart','product'],name='unique_cart_product')

@@ -8,3 +8,7 @@ urlpatterns = [
     path('account_detail/<str:username>',views.AccountDetailView.as_view()),
 ]
 
+
+
+
+#todo add password change?

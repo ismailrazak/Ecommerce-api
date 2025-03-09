@@ -7,7 +7,7 @@ class ProductQuantitySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductQuantity
-        fields = ['product','quantity','added_on']
+        fields = ['product','quantity','added_on','total_price']
 
 
 class CartSerializer(serializers.ModelSerializer):
@@ -19,9 +19,10 @@ class CartSerializer(serializers.ModelSerializer):
 
 
     def get_product(self,obj):
-        cart_items = ProductQuantity.objects.filter(cart=obj,bought_item=False)
+        cart_items = obj.product_quantity.filter(bought_item=False)
         return ProductQuantitySerializer(cart_items,many=True).data
 
-# todo add quantity to cart api
 
 #todo make url for product in cart? usign get_absolute_url
+
+#add payment integration

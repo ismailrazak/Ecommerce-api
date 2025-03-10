@@ -2,20 +2,9 @@ import os
 import uuid
 
 from django.db import models
+from django.urls import reverse
 from django.utils.deconstruct import deconstructible
 from django.conf import settings
-category_choices = [
-    ("ED", "Electronics Devices"),
-    ("HA", "Home Appliances"),
-    ("FA", "Fashion Accessories"),
-    ("SE", "Sports Equipment"),
-    ('BS', "Books & Stationery"),
-    ('BP', "Beauty Products"),
-    ('TG', "Toys & Games"),
-    ('GI', "Grocery Items"),
-    ("FD", "Furniture & Decor"),
-    ("HW", "Health & Wellness"),
-]
 
 @deconstructible
 class GenerateProfileImagePath:
@@ -37,7 +26,6 @@ class Product(models.Model):
         primary_key=True, editable=False, unique=True, default=uuid.uuid4
     )
     name=models.CharField(max_length=400)
-    category = models.CharField(max_length=2,choices=category_choices)
     description = models.TextField()
     price= models.FloatField()
     created_on=models.DateTimeField(auto_now_add=True)
@@ -47,14 +35,31 @@ class Product(models.Model):
     sold_by = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='seller_products')
     stock = models.PositiveIntegerField(default=0)
 
+    class CategoryChoices(models.TextChoices):
+        ELECTRONIC_DEVICES=("ED", "Electronics Devices")
+        HOME_APPLIANCES=("HA", "Home Appliances")
+        FASHION_ACCESSORIES=("FA", "Fashion Accessories")
+        SPORTS_EQUIPMENT=("SE", "Sports Equipment")
+        BOOKS_STATIONERY=('BS', "Books & Stationery")
+        BEAUTY_PRODUCTS=('BP', "Beauty Products")
+        TOYS_GAMES=('TG', "Toys & Games")
+        GROCERY_ITEMS=('GI', "Grocery Items")
+        FURNITURE_DECOR=("FD", "Furniture & Decor")
+        HEALTH_WELLNESS=("HW", "Health & Wellness")
+
+    category = models.CharField(max_length=2, choices=CategoryChoices)
     def save(self,*args,**kwargs):
         if self.discount_percentage:
             discount=(self.discount_percentage/100)*(self.price)
             self.discounted_price=self.price-discount
         super().save(*args,**kwargs)
 
+
     def __str__(self):
         return self.name
+
+    def get_absolute_url(self):
+        return reverse('products-detail',kwargs={'pk':self.pk})
 
 class ProductImage(models.Model):
     image = models.ImageField(upload_to=image_path,null=True,blank=True)

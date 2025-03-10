@@ -38,14 +38,20 @@ class CustomerProductViewSet(ReadOnlyModelViewSet):
     @action(detail=True, methods=['get', ])
     def remove_item_from_cart(self, request, pk=None):
         cart = self.request.user.cart
-        product=cart.products.filter(id=pk).first()
-        if product:
-            product_quantity=cart.product_quantity.get(product=product)
-            product_quantity.quantity =F('quantity')-1
-            product_quantity.save()
-            product.stock=F('stock')+1
-            product.save()
-            return Response({'success':'Item has been removed from your cart.'},status=status.HTTP_200_OK)
+        product_quantity=cart.product_quantity.filter(product__id=pk).first()
+        if product_quantity:
+            product = product_quantity.product
+            if product_quantity.quantity >1:
+                product_quantity.quantity=F('quantity')-1
+                product_quantity.save()
+                product.stock=F('stock')+1
+                product.save()
+                return Response({'success':'Item has been removed from your cart.'},status=status.HTTP_200_OK)
+            else:
+                product.stock = F('stock') + 1
+                product.save()
+                product_quantity.delete()
+                return Response({'success': 'Item has been removed from your cart.'}, status=status.HTTP_200_OK)
         return Response({'error':'Item is not present in your cart.'},status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True,methods=['get',])

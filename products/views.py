@@ -20,16 +20,14 @@ class CustomerProductViewSet(ReadOnlyModelViewSet):
     @action(detail=True,methods=["get",])
     def add_to_cart(self,request,pk=None):
         product=self.get_object()
+        cart = request.user.cart
         if product.stock > 0:
-            cart = request.user.cart
-            cart_product =cart.products.filter(id=pk).first()
-            if cart_product:
-                product_quantity=cart.product_quantity.get(product=product)
+            product_quantity =cart.product_quantity.filter(product__id=pk).first()
+            if product_quantity:
                 product_quantity.quantity=F('quantity')+1
                 product_quantity.save()
             else:
-                cart.products.add(product)
-                cart.save()
+                ProductQuantity.objects.create(cart=cart,product=product)
             product.stock=F('stock')-1
             product.save()
             return Response({'success':'The product has been successfully added to your cart.'},status=status.HTTP_200_OK)

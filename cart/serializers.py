@@ -34,3 +34,5 @@ class CartSerializer(serializers.ModelSerializer):
 
 
 #todo add payment integration
+
+# todo maybe swap builit in registration with django-allauth registration

@@ -28,3 +28,5 @@ class ProductQuantity(models.Model):
         self.total_price=price*self.quantity
         super().save(*args,**kwargs)
 
+    def __str__(self):
+        return f"{self.cart}_{self.product}"

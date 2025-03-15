@@ -2,14 +2,16 @@ from django.db.models import F
 from django.shortcuts import render
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.generics import RetrieveUpdateDestroyAPIView
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, CreateModelMixin
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet, GenericViewSet
 
 from cart.models import ProductQuantity
-from products.models import Product
+from products.models import Product, ProductImage
 from products.permissions import IsCustomerOrNone, IsSellerOrNone
-from products.serializers import CustomerProductSerializer, SellerProductSerializer
+from products.serializers import CustomerProductSerializer, SellerProductSerializer, ProductImageSerializer
 
 
 class CustomerProductViewSet(ReadOnlyModelViewSet):
@@ -61,7 +63,7 @@ class CustomerProductViewSet(ReadOnlyModelViewSet):
 class SellerProductViewSet(ModelViewSet):
     serializer_class = SellerProductSerializer
     permission_classes = IsSellerOrNone,
-
+    # parser_classes = [MultiPartParser,FormParser]
     def get_queryset(self):
         queryset = Product.objects.filter(sold_by=self.request.user)
         return queryset
@@ -69,6 +71,14 @@ class SellerProductViewSet(ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(sold_by=self.request.user)
 
+class ProductImageView(RetrieveUpdateDestroyAPIView):
+    permission_classes = IsSellerOrNone,
+    serializer_class =ProductImageSerializer
+    queryset = ProductImage.objects.all()
+
 #todo fix if customer deleted then return item back to stock
 
 #TODO fix profiles pic not deleting when user is deleted
+
+
+# todo limit images to max 5 for each item

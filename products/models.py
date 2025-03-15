@@ -1,6 +1,7 @@
 import os
 import uuid
 
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.urls import reverse
 from django.utils.deconstruct import deconstructible
@@ -33,7 +34,7 @@ class Product(models.Model):
     discount_percentage=models.FloatField(blank=True,null=True)
     discounted_price=models.FloatField(blank=True,null=True)
     sold_by = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='seller_products')
-    stock = models.PositiveIntegerField(default=0)
+    stock = models.PositiveIntegerField(default=1)
 
     class CategoryChoices(models.TextChoices):
         ELECTRONIC_DEVICES=("ED", "Electronics Devices")
@@ -61,12 +62,17 @@ class Product(models.Model):
     def get_absolute_url(self):
         return reverse('products-detail',kwargs={'pk':self.pk})
 
+def _max_product_images_validator(value):
+    if ProductImage.objects.filter(product_id=value).count() >=3:
+        raise ValidationError('Max number of images are created for your product.')
+
 class ProductImage(models.Model):
     image = models.ImageField(upload_to=image_path,null=True,blank=True)
-    product=models.ForeignKey(Product,on_delete=models.CASCADE,related_name='product_images')
+    product=models.ForeignKey(Product,on_delete=models.CASCADE,related_name='product_images',validators=(_max_product_images_validator,))
 
     def __str__(self):
         return f"{self.product.name}_{self.id}"
+
 
 class Review(models.Model):
     product = models.ForeignKey(Product,on_delete=models.CASCADE,related_name='product_reviews')

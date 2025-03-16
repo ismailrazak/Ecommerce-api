@@ -70,6 +70,7 @@ class ProductImage(models.Model):
     image = models.ImageField(upload_to=image_path,null=True,blank=True)
     product=models.ForeignKey(Product,on_delete=models.CASCADE,related_name='product_images',validators=(_max_product_images_validator,))
 
+
     def __str__(self):
         return f"{self.product.name}_{self.id}"
 
@@ -81,3 +82,6 @@ class Review(models.Model):
 
     def __str__(self):
         return f"{self.reviewer}_{self.id}_review"
+
+
+#todo clean background worker to remove empty path files

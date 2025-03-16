@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "cart",
     # 3rd party
     "rest_framework",
+'django_cleanup.apps.CleanupConfig',
 ]
 
 MIDDLEWARE = [

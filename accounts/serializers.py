@@ -61,7 +61,6 @@ class OrderSerializer(serializers.ModelSerializer):
 
 class CustomerAccountDetailSerializer(serializers.ModelSerializer):
     orders = serializers.SerializerMethodField()
-    # here orders name is  same as related_name 'orders' of product model . Thats why it works
     class Meta:
         model = get_user_model()
         fields  =['id','username','first_name','last_name', 'address', 'profile_photo', "email",'orders']

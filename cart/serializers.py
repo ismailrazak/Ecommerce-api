@@ -22,7 +22,10 @@ class CartSerializer(serializers.ModelSerializer):
         model = Cart
         fields = ['id','user','product']
 
-
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['user']= instance.user.username
+        return data
 
     def get_product(self,obj):
         cart_items = obj.product_quantity.filter(bought_item=False)

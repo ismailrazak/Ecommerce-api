@@ -80,5 +80,4 @@ class ProductImageView(RetrieveUpdateDestroyAPIView):
 
 #TODO fix profiles pic not deleting when user is deleted
 
-
-# todo limit images to max 5 for each item
+#todo add filter for category selection

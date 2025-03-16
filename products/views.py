@@ -1,10 +1,9 @@
 from django.db.models import F
-from django.shortcuts import render
+
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
-from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, CreateModelMixin
-from rest_framework.parsers import MultiPartParser, FormParser
+
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet, GenericViewSet
 
@@ -12,13 +11,14 @@ from cart.models import ProductQuantity
 from products.models import Product, ProductImage
 from products.permissions import IsCustomerOrNone, IsSellerOrNone
 from products.serializers import CustomerProductSerializer, SellerProductSerializer, ProductImageSerializer
-
+from django_filters import rest_framework as  filters
 
 class CustomerProductViewSet(ReadOnlyModelViewSet):
     serializer_class = CustomerProductSerializer
     queryset = Product.objects.all()
     permission_classes = IsCustomerOrNone,
-
+    filter_backends = filters.DjangoFilterBackend,
+    filterset_fields = ['category',]
     @action(detail=True,methods=["get",])
     def add_to_cart(self,request,pk=None):
         product=self.get_object()
@@ -63,7 +63,8 @@ class CustomerProductViewSet(ReadOnlyModelViewSet):
 class SellerProductViewSet(ModelViewSet):
     serializer_class = SellerProductSerializer
     permission_classes = IsSellerOrNone,
-    # parser_classes = [MultiPartParser,FormParser]
+    filter_backends = filters.DjangoFilterBackend,
+    filterset_fields = ['category', ]
     def get_queryset(self):
         queryset = Product.objects.filter(sold_by=self.request.user)
         return queryset
@@ -76,8 +77,4 @@ class ProductImageView(RetrieveUpdateDestroyAPIView):
     serializer_class =ProductImageSerializer
     queryset = ProductImage.objects.all()
 
-#todo fix if customer deleted then return item back to stock
 
-#TODO fix profiles pic not deleting when user is deleted
-
-#todo add filter for category selection

@@ -36,6 +36,7 @@ class Product(models.Model):
     sold_by = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='seller_products')
     stock = models.PositiveIntegerField(default=1)
 
+
     class CategoryChoices(models.TextChoices):
         ELECTRONIC_DEVICES=("ED", "Electronics Devices")
         HOME_APPLIANCES=("HA", "Home Appliances")

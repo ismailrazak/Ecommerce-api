@@ -41,10 +41,13 @@ INSTALLED_APPS = [
     "accounts",
     "products",
     "cart",
+    "search",
     # 3rd party
     "rest_framework",
 'django_cleanup.apps.CleanupConfig',
 'django_filters',
+    "django_elasticsearch_dsl",
+"django_elasticsearch_dsl_drf",
 ]
 
 MIDDLEWARE = [
@@ -142,7 +145,14 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 #django conf
 
 AUTH_USER_MODEL = 'accounts.User'
-
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+
+#elastic search conf
+ELASTICSEARCH_DSL={
+    "default": {
+        "hosts": "http://elasticsearch:9200"
+    }
+}
 

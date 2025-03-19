@@ -63,4 +63,3 @@ class SellerProductSerializer(ModelSerializer):
 
 
 
-# todo modify the  customer product list to display one image?

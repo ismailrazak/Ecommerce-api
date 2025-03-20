@@ -21,7 +21,8 @@ from django.urls import path, include
 
 api_urlpatterns = [
     path("products/",include('products.urls')),
-    path("cart/",include('cart.urls'))
+    path("cart/",include('cart.urls')),
+    path("",include('search.urls')),
 ]
 
 auth_urlpatterns = [

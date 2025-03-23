@@ -10,7 +10,7 @@ client = genai.Client(api_key=config("API_KEY"))
 
 
 
-@shared_task
+@shared_task(autoretry_for=(Exception,),max_retries=1)
 def ai_summary_review_task(product_id):
     counter =1
     all_descriptions=''
@@ -32,4 +32,5 @@ def ai_summary_review_task(product_id):
         Customers appreciate the phone's camera quality, speed, and display. They find the main camera quality superb in day light, with good charging speed. The high refresh rate makes the animations very smooth. The apps open instantly and the higher refresh rate makes the animation smoother. The phone looks classy and has a premium design. The battery life is long-lasting, and the AI feature is also very good. Overall, customers are satisfied with the performance, display quality, battery life, and overall functionality of the phone.
         ''',
     )
-    return response.text
+    product.ai_review= response.text
+    product.save()

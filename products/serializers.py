@@ -49,10 +49,7 @@ class CustomerProductSerializer(ModelSerializer):
         reviews_counter=r.incr(f"total_reviews_{instance.id}")
         if reviews_counter == 5:
             product_id=instance.id
-            result_id=ai_summary_review_task.delay(product_id)
-            result=AsyncResult(result_id)
-            instance.ai_review = result
-            instance.save()
+            ai_summary_review_task.delay(product_id)
             r.set(f"total_reviews_{instance.id}",0)
         return instance
 

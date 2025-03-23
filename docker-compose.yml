@@ -37,7 +37,7 @@ services:
   ai_review_celery_worker:
     build:
       context: .
-    command: celery -A main worker -l info --uid=nobody
+    command: celery -A main worker -l info --uid=nobody -Q ai_task_queue
     volumes:
       - .:/usr/src/app/
     environment:

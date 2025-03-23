@@ -12,8 +12,9 @@ from products.models import Product, ProductImage
 from products.permissions import IsCustomerOrNone, IsSellerOrNone
 from products.serializers import CustomerProductSerializer, SellerProductSerializer, ProductImageSerializer
 from django_filters import rest_framework as  filters
+from rest_framework.mixins import RetrieveModelMixin,UpdateModelMixin,ListModelMixin
 
-class CustomerProductViewSet(ReadOnlyModelViewSet):
+class CustomerProductViewSet(GenericViewSet,RetrieveModelMixin,UpdateModelMixin,ListModelMixin):
     serializer_class = CustomerProductSerializer
     queryset = Product.objects.all()
     permission_classes = IsCustomerOrNone,

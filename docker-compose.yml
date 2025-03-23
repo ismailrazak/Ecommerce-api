@@ -11,6 +11,7 @@ services:
     depends_on:
       - db
       - elastic_search
+      - ai_review_celery_worker
     environment:
       - DATABASE_URL=postgres://postgres:postgres@db:5432/postgres
 
@@ -20,6 +21,7 @@ services:
       - postgres_data:/var/lib/postgresql/data/
     environment:
       - "POSTGRES_HOST_AUTH_METHOD=trust"
+
 
   elastic_search:
       container_name: elasticsearch
@@ -31,6 +33,18 @@ services:
         - xpack.security.enabled=false
       volumes:
         - es_data:/usr/share/elasticsearch/data
+
+  ai_review_celery_worker:
+    build:
+      context: .
+    command: celery -A main worker -l info --uid=nobody
+    volumes:
+      - .:/usr/src/app/
+    environment:
+      - REDIS_URL=redis://redis:6379
+
+  redis:
+    image: redis
 
 volumes:
   es_data:

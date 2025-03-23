@@ -1,8 +1,28 @@
+from decouple import config
 from drf_writable_nested import WritableNestedModelSerializer
 from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
-from products.models import Product, ProductImage
+from products.models import Product, ProductImage,Review
+import redis
+from celery.result import AsyncResult
+from products.tasks import ai_summary_review_task
 
+r = redis.Redis(
+    host=config("REDIS_HOST", default="redis"),
+    port=config("REDIS_PORT", default=6379),
+    db=0,
+    decode_responses=True,
+)
+
+class ReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = ['id','reviewer','description']
+
+    def to_representation(self, instance):
+        data  = super().to_representation(instance)
+        data['reviewer']= instance.reviewer.username
+        return data
 
 class ProductImageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -14,9 +34,27 @@ class ProductImageSerializer(serializers.ModelSerializer):
 
 class CustomerProductSerializer(ModelSerializer):
     images = ProductImageSerializer(many=True,source='product_images',read_only=True)
+    reviews = ReviewSerializer(many=True,read_only=True,source='product_reviews')
+    write_review= serializers.CharField(allow_blank=True,allow_null=True,write_only=True)
     class Meta:
         model = Product
-        fields = ('id',"url",'name',"category", 'description', 'price', 'discount_percentage',"discounted_price", 'sold_by', 'stock','images' )
+        fields = ('id',"url",'name',"category", 'description', 'price', 'discount_percentage',"discounted_price", 'sold_by', 'stock','images','reviews','write_review','ai_review' )
+        read_only_fields=['name','category','description','price', 'discount_percentage',"discounted_price", 'sold_by', 'stock','ai_review']
+
+    def update(self,instance, validated_data):
+        written_review=validated_data.pop('write_review')
+        if instance.product_reviews.filter(reviewer=self.context['request'].user).exists():
+            raise serializers.ValidationError({'error':'You have already made a review for this product.'})
+        Review.objects.create(description=written_review,reviewer=self.context['request'].user,product=instance)
+        reviews_counter=r.incr(f"total_reviews_{instance.id}")
+        if reviews_counter == 5:
+            product_id=instance.id
+            result_id=ai_summary_review_task.delay(product_id)
+            result=AsyncResult(result_id)
+            instance.ai_review = result
+            instance.save()
+            r.set(f"total_reviews_{instance.id}",0)
+        return instance
 
     def to_representation(self, instance):
         data = super().to_representation(instance)

@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 from pathlib import Path
 import dj_database_url
+from decouple import config
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -143,7 +145,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 #django conf
-
 AUTH_USER_MODEL = 'accounts.User'
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
@@ -160,3 +161,10 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 100
 }
+
+#celery conf
+CELERY_ACCEPT_CONTENT = ["application/json"]
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_RESULT_EXPIRES = 60 * 60 * 24
+CELERY_BROKER_URL = config("REDIS_URL",default="redis://redis:6379")
+CELERY_RESULT_BACKEND = config("REDIS_URL",default="redis://redis:6379")

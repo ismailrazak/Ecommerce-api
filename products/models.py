@@ -35,7 +35,7 @@ class Product(models.Model):
     discounted_price=models.FloatField(blank=True,null=True)
     sold_by = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='seller_products')
     stock = models.PositiveIntegerField(default=1)
-
+    ai_review = models.TextField(blank=True)
 
     class CategoryChoices(models.TextChoices):
         ELECTRONIC_DEVICES=("ED", "Electronics Devices")
@@ -80,6 +80,10 @@ class Review(models.Model):
     product = models.ForeignKey(Product,on_delete=models.CASCADE,related_name='product_reviews')
     reviewer=models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='reviews')
     description = models.TextField()
+    timestamp=models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
 
     def __str__(self):
         return f"{self.reviewer}_{self.id}_review"

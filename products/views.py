@@ -1,3 +1,4 @@
+from decouple import config
 from django.db.models import F
 
 from rest_framework import status
@@ -5,15 +6,25 @@ from rest_framework.decorators import action
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
 
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet, GenericViewSet
 
 from cart.models import ProductQuantity
-from products.models import Product, ProductImage
-from products.permissions import IsCustomerOrNone, IsSellerOrNone
-from products.serializers import CustomerProductSerializer, SellerProductSerializer, ProductImageSerializer
+from products.models import Product, ProductImage, Review
+from products.permissions import IsCustomerOrNone, IsSellerOrNone, IsReviewerOrReadOnly
+from products.serializers import CustomerProductSerializer, SellerProductSerializer, ProductImageSerializer, \
+    ReviewSerializer
 from django_filters import rest_framework as  filters
 from rest_framework.mixins import RetrieveModelMixin,UpdateModelMixin,ListModelMixin
+import redis
+from products.tasks import ai_summary_review_task
 
+r = redis.Redis(
+    host=config("REDIS_HOST", default="redis"),
+    port=config("REDIS_PORT", default=6379),
+    db=0,
+    decode_responses=True,
+)
 class CustomerProductViewSet(GenericViewSet,RetrieveModelMixin,UpdateModelMixin,ListModelMixin):
     serializer_class = CustomerProductSerializer
     queryset = Product.objects.all()
@@ -78,7 +89,31 @@ class ProductImageView(RetrieveUpdateDestroyAPIView):
     serializer_class =ProductImageSerializer
     queryset = ProductImage.objects.all()
 
+class ProductReviewView(RetrieveUpdateDestroyAPIView):
+    serializer_class = ReviewSerializer
+    permission_classes = IsReviewerOrReadOnly,
+    queryset = Review.objects.all()
 
+class ProductReviewCreateView(APIView):
+    permission_classes = IsCustomerOrNone,
+
+    def get(self,request,pk=None):
+        product=Product.objects.filter(id=pk).first()
+        serializer=CustomerProductSerializer(product,context={'request': request})
+        return Response(serializer.data,status=status.HTTP_200_OK)
+
+    def post(self,request,pk=None):
+        product=Product.objects.filter(id=pk).first()
+        description=request.data.get('description')
+        reviewer=self.request.user
+        if product.product_reviews.filter(reviewer=reviewer).exists():
+            return Response({'error':'You have already made a review for this product.'},status=status.HTTP_400_BAD_REQUEST)
+        review=Review.objects.create(product=product,reviewer=self.request.user,description=description)
+        reviews_counter = r.incr(f"total_reviews_{product.id}")
+        if reviews_counter == 5:
+            ai_summary_review_task.delay(product.id)
+            r.set(f"total_reviews_{product.id}", 0)
+        return Response({'success':'Review has been created successfully.'},status=status.HTTP_201_CREATED)
 
 
 

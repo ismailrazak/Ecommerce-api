@@ -5,6 +5,7 @@ from google import genai
 
 from products.models import Product
 
+
 client = genai.Client(api_key=config("API_KEY"))
 
 
@@ -34,3 +35,10 @@ def ai_summary_review_task(product_id):
     )
     product.ai_review= response.text
     product.save()
+
+#
+# def hot_deals_task():
+#     categories=list(Product.CategoryChoices)
+#     for category in categories:
+#         products=Product.objects.filter(category=category.value).order_by("-discount_percentage")
+#         serialized_products=CustomerProductSerializer(products,many=True)

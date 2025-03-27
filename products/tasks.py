@@ -4,14 +4,21 @@ from decouple import config
 from google import genai
 
 from products.models import Product
-
+from products.serializers import CustomerProductSerializer
+import redis
+from django.core.cache import cache
 
 client = genai.Client(api_key=config("API_KEY"))
+r = redis.Redis(
+    host=config("REDIS_HOST", default="redis"),
+    port=config("REDIS_PORT", default=6379),
+    db=0,
+    decode_responses=True,
+)
 
 
 
-
-@shared_task(autoretry_for=(Exception,),max_retries=1)
+@shared_task(autoretry_for=(Exception,),max_retries=1,queue='ai_summary_queue')
 def ai_summary_review_task(product_id):
     counter =1
     all_descriptions=''
@@ -36,9 +43,18 @@ def ai_summary_review_task(product_id):
     product.ai_review= response.text
     product.save()
 
-#
-# def hot_deals_task():
-#     categories=list(Product.CategoryChoices)
-#     for category in categories:
-#         products=Product.objects.filter(category=category.value).order_by("-discount_percentage")
-#         serialized_products=CustomerProductSerializer(products,many=True)
+@shared_task
+def hot_deals_task():
+    categories=list(Product.CategoryChoices)
+    for category in categories:
+        products=Product.objects.filter(category=category.value).order_by("-discount_percentage")[:20]
+        serialized_data = HotDealsTaskSerializer(products,many=True)
+        cache_key=f"category:{category.value}"
+        cache.set(cache_key,serialized_data.data,3600)
+
+
+class HotDealsTaskSerializer(CustomerProductSerializer):
+    class Meta(CustomerProductSerializer.Meta):
+        fields = (
+        'id', 'name', "category", 'description', 'price', 'discount_percentage', "discounted_price", 'sold_by',
+        'stock', 'images', 'reviews', 'ai_review')

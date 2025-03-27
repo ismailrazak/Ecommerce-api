@@ -37,7 +37,16 @@ services:
   ai_review_celery_worker:
     build:
       context: .
-    command: celery -A main worker -l info --uid=nobody -Q ai_task_queue
+    command: celery -A main worker -l info --uid=nobody -Q ai_summary_queue
+    volumes:
+      - .:/usr/src/app/
+    environment:
+      - REDIS_URL=redis://redis:6379
+
+  hot_deals_beats_worker:
+    build:
+      context: .
+    command: celery -A main worker -B -l info
     volumes:
       - .:/usr/src/app/
     environment:

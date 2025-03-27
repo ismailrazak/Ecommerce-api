@@ -35,7 +35,6 @@ class CustomerProductSerializer(ModelSerializer):
         fields = ('id',"url",'name',"category", 'description', 'price', 'discount_percentage',"discounted_price", 'sold_by', 'stock','images','reviews','ai_review' )
         read_only_fields=['name','category','description','price', 'discount_percentage',"discounted_price", 'sold_by', 'stock','ai_review']
 
-
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data['category']=instance.get_category_display()

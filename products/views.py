@@ -25,6 +25,7 @@ r = redis.Redis(
     db=0,
     decode_responses=True,
 )
+
 class CustomerProductViewSet(GenericViewSet,RetrieveModelMixin,UpdateModelMixin,ListModelMixin):
     serializer_class = CustomerProductSerializer
     queryset = Product.objects.all()

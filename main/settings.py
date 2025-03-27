@@ -168,3 +168,14 @@ CELERY_RESULT_SERIALIZER = "json"
 CELERY_RESULT_EXPIRES = 60 * 60 * 24
 CELERY_BROKER_URL = config("REDIS_URL",default="redis://redis:6379")
 CELERY_RESULT_BACKEND = config("REDIS_URL",default="redis://redis:6379")
+
+
+#cache conf
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": config("REDIS_URL", default="redis://redis:6379"),
+"KEY_PREFIX": "ecommerce",
+    }
+}

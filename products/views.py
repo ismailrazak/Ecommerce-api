@@ -1,4 +1,5 @@
 from decouple import config
+from django.core.cache import cache
 from django.db.models import F
 
 from rest_framework import status
@@ -117,9 +118,16 @@ class ProductReviewCreateView(APIView):
         return Response({'success':'Review has been created successfully.'},status=status.HTTP_201_CREATED)
 
 
+class HotDealsView(APIView):
+    def get(self,request,category,pk=None):
 
-
-
-
-
+        products=cache.get(f"category:{category}")
+        if products:
+            return Response(products,status=status.HTTP_200_OK)
+        else:
+            products = Product.objects.filter(category=category).order_by("-discount_percentage")[:50]
+            serializer = CustomerProductSerializer(products, many=True,context={'request':request})
+            if serializer:
+                return Response(serializer.data,status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 #todo add buy all in cart too

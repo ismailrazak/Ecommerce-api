@@ -47,7 +47,7 @@ def ai_summary_review_task(product_id):
 def hot_deals_task():
     categories=list(Product.CategoryChoices)
     for category in categories:
-        products=Product.objects.filter(category=category.value).order_by("-discount_percentage")[:20]
+        products=Product.objects.filter(category=category.value).order_by("-discount_percentage")[:50]
         serialized_data = HotDealsTaskSerializer(products,many=True)
         cache_key=f"category:{category.value}"
         cache.set(cache_key,serialized_data.data,3600)

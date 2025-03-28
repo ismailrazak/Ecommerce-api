@@ -14,10 +14,11 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from allauth.account.views import ConfirmEmailView
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 
 api_urlpatterns = [
     path("products/",include('products.urls')),
@@ -27,10 +28,18 @@ api_urlpatterns = [
 
 auth_urlpatterns = [
     path("",include('accounts.urls')),
-    path("login/",include("rest_framework.urls"))
+    path("",include("rest_framework.urls")),
+path("", include("dj_rest_auth.urls")),
+    path('', include('dj_rest_auth.registration.urls'))
 ]
 
 urlpatterns = [
+    # add the below path to resolve placeholder issue for email confirmation.
+    re_path(
+        "^auth/account-confirm-email/(?P<key>[-:\w]+)/$",
+        ConfirmEmailView.as_view(),
+        name="account_confirm_email",
+    ),
     path("admin/", admin.site.urls),
     path("auth/",include(auth_urlpatterns)),
     path("",include(api_urlpatterns)),

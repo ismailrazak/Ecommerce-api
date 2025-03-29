@@ -1,27 +1,93 @@
+from http.client import HTTPResponse
+from urllib.parse import urljoin
+
+import requests
+from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
+from allauth.socialaccount.providers.oauth2.client import OAuth2Client
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
+from django.shortcuts import render
+from django.urls import reverse
+from django.views import View
 from rest_framework import status
 from rest_framework.generics import CreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from accounts.permissions import IsTheSameUserOrNone
 from accounts.serializers import SellerAccountDetailSerializer, CustomerAccountDetailSerializer, \
      UserRegistrationSerializer
-from dj_rest_auth.registration.views import RegisterView
+from dj_rest_auth.registration.views import RegisterView, SocialLoginView
 
 from cart.models import Cart
+import logging
+logger=logging.getLogger('accounts.views')
+
+class LoginPage(View):
+    def get(self, request, *args, **kwargs):
+        return render(
+            request,
+            "pages/login.html",
+            {
+                "google_callback_uri": settings.GOOGLE_OAUTH_CALLBACK_URL,
+                "google_client_id": settings.GOOGLE_OAUTH_CLIENT_ID,
+            },
+        )
+class CustomGoogleOAuth2Client(OAuth2Client):
+    def __init__(
+        self,
+        request,
+        consumer_key,
+        consumer_secret,
+        access_token_method,
+        access_token_url,
+        callback_url,
+        _scope,
+        scope_delimiter=" ",
+        headers=None,
+        basic_auth=False,
+    ):
+        super().__init__(
+            request,
+            consumer_key,
+            consumer_secret,
+            access_token_method,
+            access_token_url,
+            callback_url,
+            scope_delimiter,
+            headers,
+            basic_auth,
+        )
+class GoogleLogin(SocialLoginView):
+    adapter_class = GoogleOAuth2Adapter
+    callback_url = settings.GOOGLE_OAUTH_CALLBACK_URL
+    client_class = CustomGoogleOAuth2Client
 
 
-#
-# class CustomerRegistrationView(CreateAPIView):
-#     serializer_class = CustomerRegistrationSerializer
-#     queryset = get_user_model().objects.all()
-#
-#
-# class SellerRegistrationView(CreateAPIView):
-#     serializer_class = SellerRegistrationSerializer
-#     queryset = get_user_model().objects.all()
+class GoogleLoginCallback(APIView):
+    def get(self, request, *args, **kwargs):
 
+        code = request.GET.get("code")
+
+        if code is None:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        token_endpoint_url = urljoin("http://localhost:8000", reverse("google_login"))
+        response = requests.post(url=token_endpoint_url, data={
+    "code": code,
+    "client_id": settings.GOOGLE_OAUTH_CLIENT_ID,
+    "grant_type": "authorization_code",
+    "client_secret": settings.GOOGLE_OAUTH_CLIENT_SECRET,
+})
+        # creates a customer from the google login
+        user_data=response.json()
+        user_id=user_data['user']['pk']
+        user=get_user_model().objects.filter(id=user_id).first()
+        customer_group = Group.objects.get(name='customers')
+        user.groups.add(customer_group)
+        Cart.objects.create(user=user)
+        return Response(response.json())
 
 class AccountDetailView(RetrieveUpdateDestroyAPIView):
     permission_classes = IsTheSameUserOrNone,

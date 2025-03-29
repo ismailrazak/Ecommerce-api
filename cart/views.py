@@ -1,5 +1,13 @@
+from urllib.parse import urljoin
+
+import requests
+from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
+from allauth.socialaccount.providers.oauth2.client import OAuth2Client
+from dj_rest_auth.registration.views import SocialLoginView
+from django.conf import settings
 from django.db import transaction
 from django.db.models import F
+from django.urls import reverse
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.generics import RetrieveAPIView, CreateAPIView, GenericAPIView
@@ -13,6 +21,8 @@ from cart.models import Cart
 from cart.serializers import CartSerializer
 from products.models import Product
 from products.permissions import IsCustomerOrNone
+
+
 
 class CartView(APIView):
     permission_classes = IsCustomerOrNone,

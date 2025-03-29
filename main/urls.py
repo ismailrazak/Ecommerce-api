@@ -20,6 +20,8 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include, re_path
 
+from accounts.views import LoginPage, GoogleLogin, GoogleLoginCallback
+
 api_urlpatterns = [
     path("products/",include('products.urls')),
     path("cart/",include('cart.urls')),
@@ -28,9 +30,16 @@ api_urlpatterns = [
 
 auth_urlpatterns = [
     path("",include('accounts.urls')),
-    path("",include("rest_framework.urls")),
+    # path("",include("rest_framework.urls")),
 path("", include("dj_rest_auth.urls")),
-    path('', include('dj_rest_auth.registration.urls'))
+    path('', include('dj_rest_auth.registration.urls')),
+path("google/login/", LoginPage.as_view(), name="login"),
+path("google/", GoogleLogin.as_view(), name="google_login"),
+    path(
+        "google/callback/",
+        GoogleLoginCallback.as_view(),
+        name="google_login_callback",
+    ),
 ]
 
 urlpatterns = [

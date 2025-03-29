@@ -30,3 +30,5 @@ class ProductQuantity(models.Model):
 
     def __str__(self):
         return f"{self.cart}_{self.product}"
+
+    #todo create a new orders model link to user and have order_id ,pay_id,pro

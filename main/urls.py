@@ -30,7 +30,7 @@ api_urlpatterns = [
 
 auth_urlpatterns = [
     path("",include('accounts.urls')),
-    # path("",include("rest_framework.urls")),
+    path("session_login/",include("rest_framework.urls")),
 path("", include("dj_rest_auth.urls")),
     path('', include('dj_rest_auth.registration.urls')),
 path("google/login/", LoginPage.as_view(), name="login"),

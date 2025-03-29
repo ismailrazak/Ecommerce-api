@@ -9,6 +9,7 @@ urlpatterns =[
     path('product_image/<int:pk>',views.ProductImageView.as_view(),name='product_image_detail'),
     path('product_review_create/<str:pk>',views.ProductReviewCreateView.as_view()),
     path('product_review/<str:pk>', views.ProductReviewView.as_view(),name='product_review'),
-    path('hot_deals/<str:category>',views.HotDealsView.as_view())
+    path('hot_deals/<str:category>',views.HotDealsView.as_view()),
+    path('payment_handler/',views.PaymentHandler.as_view(),name='payment_handler')
 ]
 urlpatterns += router.urls

@@ -1,15 +1,21 @@
+import json
+
 from decouple import config
 from django.core.cache import cache
 from django.db.models import F
+from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
 
 from rest_framework import status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, renderer_classes
 from rest_framework.generics import RetrieveUpdateDestroyAPIView
+from rest_framework.renderers import TemplateHTMLRenderer
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet, GenericViewSet
 
+from accounts.views import logger
 from cart.models import ProductQuantity
 from products.models import Product, ProductImage, Review
 from products.permissions import IsCustomerOrNone, IsSellerOrNone, IsReviewerOrReadOnly
@@ -19,6 +25,11 @@ from django_filters import rest_framework as  filters
 from rest_framework.mixins import RetrieveModelMixin,UpdateModelMixin,ListModelMixin
 import redis
 from products.tasks import ai_summary_review_task
+import razorpay
+
+razorpay_client = razorpay.Client(
+    auth=(config("RAZOR_ID"), config("RAZOR_SECRET")))
+
 
 r = redis.Redis(
     host=config("REDIS_HOST", default="redis"),
@@ -68,10 +79,37 @@ class CustomerProductViewSet(GenericViewSet,RetrieveModelMixin,UpdateModelMixin,
                 return Response({'success': 'Item has been removed from your cart.'}, status=status.HTTP_200_OK)
         return Response({'error':'Item is not present in your cart.'},status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=True,methods=['get',])
-    def buy_now(self,request,pk=None):
-        pass
 
+    @action(detail=True,methods=['get',],renderer_classes=[TemplateHTMLRenderer])
+    def buy_now(self,request,pk=None):
+
+        product=self.get_object()
+        razorpay_order = razorpay_client.order.create(dict(amount=int(product.discounted_price)*100,
+                                                           currency="INR"))
+        razorpay_order_id = razorpay_order['id']
+        callback_url = reverse("payment_handler")
+        data={"RAZOR_ID":config("RAZOR_ID"),"product":product,"user":request.user,"razorpay_order_id":razorpay_order_id,"callback_url":callback_url }
+        return Response(data,template_name="checkout.html")
+
+class PaymentHandler(APIView):
+    def post(self,request,pk=None):
+            try:
+                payment_id = request.data.get('razorpay_payment_id', '')
+                razorpay_order_id = request.data.get('razorpay_order_id', '')
+                signature = request.data.get('razorpay_signature', '')
+                params_dict = {
+                    'razorpay_order_id': razorpay_order_id,
+                    'razorpay_payment_id': payment_id,
+                    'razorpay_signature': signature
+                }
+                result = razorpay_client.utility.verify_payment_signature(
+                    params_dict)
+                if result is not None:
+                    return Response("paymenyt success",status=status.HTTP_200_OK)
+                else:
+                    return Response( "payment fail",status=status.HTTP_400_BAD_REQUEST)
+            except:
+                return Response("payment fail", status=status.HTTP_400_BAD_REQUEST)
 
 
 class SellerProductViewSet(ModelViewSet):

@@ -1,0 +1,14 @@
+{% load rest_framework %}
+<form method="POST" action="https://api.razorpay.com/v1/checkout/embedded">
+  <input type="hidden" name="key_id" value={{RAZOR_ID}} />
+  <input type="hidden" name="amount" value={{product.price}} />
+  <input type="hidden" name="currency" value="INR" />
+  <input type="hidden" name="order_id" value={{razorpay_order_id}} />
+  <input type="hidden" name="name" value={{product.name}}/>
+  <input type="hidden" name="image" value="https://cdn.razorpay.com/logos/BUVwvgaqVByGp2_large.jpg" />
+  <input type="hidden" name="prefill[name]" value={{user.username}} />
+  <input type="hidden" name="prefill[email]" value={{user.email}} />
+  <input type="hidden" name="callback_url" value=http://localhost:8000/{{callback_url}} />
+<!--  <input type="hidden" name="cancel_url" value="https://example.com/payment-cancel"/>-->
+  <button>Submit</button>
+</form>

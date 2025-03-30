@@ -20,6 +20,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path, re_path
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from accounts.views import GoogleLogin, GoogleLoginCallback, LoginPage
 
@@ -32,7 +33,9 @@ api_urlpatterns = [
 auth_urlpatterns = [
     path("", include("accounts.urls")),
     path("session_login/", include("rest_framework.urls")),
-    path("", include("dj_rest_auth.urls")),
+    path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    # path("", include("dj_rest_auth.urls")),
     # path('', include('dj_rest_auth.registration.urls')),
     path("google/login/", LoginPage.as_view(), name="login"),
     path("google/", GoogleLogin.as_view(), name="google_login"),

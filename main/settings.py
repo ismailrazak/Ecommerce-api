@@ -35,7 +35,7 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = config(
 SECURE_HSTS_PRELOAD = config("SECURE_HSTS_PRELOAD", cast=bool, default=True)
 SESSION_COOKIE_SECURE = config("SESSION_COOKIE_SECURE", cast=bool, default=True)
 CSRF_COOKIE_SECURE = config("CSRF_COOKIE_SECURE ", cast=bool, default=True)
-CSRF_TRUSTED_ORIGINS = ["https://github-pull-request-reviewer-api.onrender.com/*"]
+# CSRF_TRUSTED_ORIGINS = ["https://github-pull-request-reviewer-api.onrender.com/*"]
 ALLOWED_HOSTS = ["github-pull-request-reviewer-api.onrender.com", "127.0.0.1"]
 
 # Application definition
@@ -168,11 +168,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 
 # elastic search conf
-ELASTICSEARCH_DSL = {
-    "default": {
-        "hosts": config("ELASTIC_SEARCH_URL", default="http://elasticsearch:9200")
-    }
-}
+ELASTICSEARCH_DSL = {"default": {"hosts": "http://elasticsearch:9200"}}
 # rest framework conf
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",

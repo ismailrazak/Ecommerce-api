@@ -61,10 +61,13 @@ class SellerProductsSerializer(serializers.ModelSerializer):
         fields = ['name','price']
 
 class CustomerAccountDetailSerializer(serializers.ModelSerializer):
-    orders = OrderSerializer(many=True,read_only=True)
+    orders =serializers.SerializerMethodField()
     class Meta:
         model = get_user_model()
         fields  =['id','username','first_name','last_name', 'address', 'profile_photo', "email",'orders']
+    def get_orders(self,obj):
+        orders=obj.orders.exclude(payment_id="")
+        return OrderSerializer(orders,context={'request': self.context['request']},many=True).data
 
 
 class SellerAccountDetailSerializer(serializers.ModelSerializer):

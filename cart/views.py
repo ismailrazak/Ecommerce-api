@@ -19,7 +19,6 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 from django.shortcuts import get_object_or_404
 
-from accounts.views import logger
 from cart.models import Cart
 from cart.serializers import CartSerializer
 from products.models import Product, Order
@@ -73,9 +72,35 @@ class CartBuyAllView(APIView):
             order=Order(product=product,user=request.user,order_id=razorpay_order_id,quantity=product_quantity.quantity,final_price=product_quantity.total_price)
             create_orders.append(order)
         Order.objects.bulk_create(create_orders)
-        cart.products.clear()
-        callback_url = reverse("payment_handler")
+        callback_url = reverse("cart_payment_handler")
         data = {"RAZOR_ID": config("RAZOR_ID"), "total_price": total_price, "user": request.user,
                 "razorpay_order_id": razorpay_order_id, "callback_url": callback_url}
         return Response(data, template_name="cart_checkout.html")
 
+class CartPaymentHandler(APIView):
+    def post(self,request,pk=None):
+            update_orders=[]
+            try:
+                payment_id = request.data.get('razorpay_payment_id', '')
+                razorpay_order_id = request.data.get('razorpay_order_id', '')
+                signature = request.data.get('razorpay_signature', '')
+                params_dict = {
+                    'razorpay_order_id': razorpay_order_id,
+                    'razorpay_payment_id': payment_id,
+                    'razorpay_signature': signature
+                }
+                result = razorpay_client.utility.verify_payment_signature(
+                    params_dict)
+                if result is not None:
+                    orders=Order.objects.filter(order_id=razorpay_order_id)
+                    for order in orders:
+                        order.payment_id=payment_id
+                        update_orders.append(order)
+                    Order.objects.bulk_update(update_orders,['payment_id'])
+                    user=orders[0].user
+                    user.cart.products.clear()
+                    return Response("payment success",status=status.HTTP_200_OK)
+                else:
+                    return Response( "payment fail",status=status.HTTP_400_BAD_REQUEST)
+            except Exception as e:
+                return Response("payment exception fail", status=status.HTTP_400_BAD_REQUEST)

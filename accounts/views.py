@@ -21,8 +21,7 @@ from accounts.serializers import SellerAccountDetailSerializer, CustomerAccountD
 from dj_rest_auth.registration.views import RegisterView, SocialLoginView
 
 from cart.models import Cart
-import logging
-logger=logging.getLogger('accounts.views')
+
 
 class LoginPage(View):
     def get(self, request, *args, **kwargs):

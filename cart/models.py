@@ -23,11 +23,12 @@ class ProductQuantity(models.Model):
         ]
 
     def save(self,*args,**kwargs):
-        price=self.product.price
+        if not self.product.discounted_price:
+            price = self.product.price
+        price=self.product.discounted_price
         self.total_price=price*self.quantity
         super().save(*args,**kwargs)
 
     def __str__(self):
         return f"{self.cart}_{self.product}"
 
-    #todo create a new orders model link to user and have order_id ,pay_id,pro

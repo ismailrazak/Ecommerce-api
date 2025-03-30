@@ -28,9 +28,9 @@ class CartSerializer(serializers.ModelSerializer):
         return data
 
     def get_product(self,obj):
-        cart_items = obj.product_quantity.filter(bought_item=False)
+        cart_items = obj.product_quantity.all()
         return ProductQuantitySerializer(cart_items,many=True,context={'request': self.context['request']}).data
-
+#todo replace serializermethod with product quantity serializer
 
 
 

@@ -3,6 +3,7 @@ import json
 from decouple import config
 from django.core.cache import cache
 from django.db.models import F
+from django.http import JsonResponse
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 
@@ -17,7 +18,7 @@ from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet, GenericV
 
 from accounts.views import logger
 from cart.models import ProductQuantity
-from products.models import Product, ProductImage, Review
+from products.models import Product, ProductImage, Review, Order
 from products.permissions import IsCustomerOrNone, IsSellerOrNone, IsReviewerOrReadOnly
 from products.serializers import CustomerProductSerializer, SellerProductSerializer, ProductImageSerializer, \
     ReviewSerializer
@@ -84,19 +85,26 @@ class CustomerProductViewSet(GenericViewSet,RetrieveModelMixin,UpdateModelMixin,
     def buy_now(self,request,pk=None):
 
         product=self.get_object()
+        if product.stock<=0:
+            return JsonResponse({'error':'product out of stock.'})
         razorpay_order = razorpay_client.order.create(dict(amount=int(product.discounted_price)*100,
                                                            currency="INR"))
         razorpay_order_id = razorpay_order['id']
         callback_url = reverse("payment_handler")
+        Order.objects.create(user=request.user,order_id=razorpay_order_id,product=product,final_price=product.discounted_price)
+        product.stock=F('stock')-1
+        product.save()
         data={"RAZOR_ID":config("RAZOR_ID"),"product":product,"user":request.user,"razorpay_order_id":razorpay_order_id,"callback_url":callback_url }
         return Response(data,template_name="checkout.html")
 
 class PaymentHandler(APIView):
     def post(self,request,pk=None):
+            update_orders=[]
             try:
                 payment_id = request.data.get('razorpay_payment_id', '')
                 razorpay_order_id = request.data.get('razorpay_order_id', '')
                 signature = request.data.get('razorpay_signature', '')
+                logger.debug(razorpay_order_id)
                 params_dict = {
                     'razorpay_order_id': razorpay_order_id,
                     'razorpay_payment_id': payment_id,
@@ -105,11 +113,17 @@ class PaymentHandler(APIView):
                 result = razorpay_client.utility.verify_payment_signature(
                     params_dict)
                 if result is not None:
-                    return Response("paymenyt success",status=status.HTTP_200_OK)
+                    orders=Order.objects.filter(order_id=razorpay_order_id)
+                    for order in orders:
+                        order.payment_id=payment_id
+                        update_orders.append(order)
+                    Order.objects.bulk_update(update_orders,['payment_id'])
+                    return Response("payment success",status=status.HTTP_200_OK)
                 else:
                     return Response( "payment fail",status=status.HTTP_400_BAD_REQUEST)
-            except:
-                return Response("payment fail", status=status.HTTP_400_BAD_REQUEST)
+            except Exception as e:
+                #todo in exception if payment fails delete order and return product if payment fails too.
+                return Response("payment exception fail", status=status.HTTP_400_BAD_REQUEST)
 
 
 class SellerProductViewSet(ModelViewSet):
@@ -169,3 +183,4 @@ class HotDealsView(APIView):
                 return Response(serializer.data,status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 #todo add buy all in cart too
+# todo add db transaction to both of pays

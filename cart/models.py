@@ -15,7 +15,6 @@ class ProductQuantity(models.Model):
     product= models.ForeignKey('products.Product',models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
     added_on = models.DateTimeField(auto_now=True)
-    bought_item = models.BooleanField(default=False)
     total_price = models.FloatField(blank=True,null=True)
 
     class Meta:

@@ -7,6 +7,7 @@ from products.models import Product
 from django.contrib.auth.models import Group
 from dj_rest_auth.registration.serializers import RegisterSerializer
 
+from products.serializers import OrderSerializer
 
 
 # class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -54,24 +55,20 @@ from dj_rest_auth.registration.serializers import RegisterSerializer
 #         Cart.objects.create(user=user)
 #         return user
 
-class OrderSerializer(serializers.ModelSerializer):
+class SellerProductsSerializer(serializers.ModelSerializer):
     class Meta:
         model =Product
         fields = ['name','price']
 
 class CustomerAccountDetailSerializer(serializers.ModelSerializer):
-    orders = serializers.SerializerMethodField()
+    orders = OrderSerializer(many=True,read_only=True)
     class Meta:
         model = get_user_model()
         fields  =['id','username','first_name','last_name', 'address', 'profile_photo', "email",'orders']
 
-    def get_orders(self,obj):
-        cart= obj.cart
-        products_ordered = cart.product_quantity.filter(bought_item=True)
-        return ProductQuantitySerializer(products_ordered,many=True).data
 
 class SellerAccountDetailSerializer(serializers.ModelSerializer):
-    products = OrderSerializer(read_only=True, many=True,source='seller_products')
+    products = SellerProductsSerializer(read_only=True, many=True,source='seller_products')
     class Meta:
         model = get_user_model()
         fields = ['id', 'username', 'first_name', 'last_name', 'address', 'profile_photo', "email", 'products']

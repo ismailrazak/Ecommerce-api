@@ -88,5 +88,17 @@ class Review(models.Model):
     def __str__(self):
         return f"{self.reviewer}_{self.id}_review"
 
+class Order(models.Model):
+    id = models.UUIDField(
+        primary_key=True, editable=False, unique=True, default=uuid.uuid4
+    )
+    user=models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='orders')
+    product = models.ForeignKey(Product,on_delete=models.SET_NULL,null=True,blank=True)
+    payment_id=models.CharField(max_length=20,blank=True)
+    order_id=models.CharField(max_length=20,blank=True)
+    quantity=models.PositiveIntegerField(default=1)
+    ordered_on=models.DateTimeField(auto_now_add=True)
+    final_price=models.PositiveIntegerField(null=True,blank=True)
 
-#todo clean background worker to remove empty path files
+    class Meta:
+        ordering = ['-ordered_on']

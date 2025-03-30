@@ -2,7 +2,7 @@ from decouple import config
 from drf_writable_nested import WritableNestedModelSerializer
 from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
-from products.models import Product, ProductImage,Review
+from products.models import Product, ProductImage, Review, Order
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -63,7 +63,12 @@ class SellerProductSerializer(ModelSerializer):
         data['category']=instance.get_category_display()
         return data
 
-
+class OrderSerializer(serializers.ModelSerializer):
+    product=serializers.HyperlinkedRelatedField(view_name='product-detail',read_only=True)
+    class Meta:
+        model=Order
+        fields=['product','order_id','payment_id','quantity','final_price','ordered_on']
+        read_only_fields=['order_id','payment_id','quantity','final_price','ordered_on']
 
 
 

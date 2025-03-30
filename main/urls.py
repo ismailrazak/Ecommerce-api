@@ -32,7 +32,7 @@ auth_urlpatterns = [
     path("",include('accounts.urls')),
     path("session_login/",include("rest_framework.urls")),
 path("", include("dj_rest_auth.urls")),
-    path('', include('dj_rest_auth.registration.urls')),
+    #path('', include('dj_rest_auth.registration.urls')),
 path("google/login/", LoginPage.as_view(), name="login"),
 path("google/", GoogleLogin.as_view(), name="google_login"),
     path(

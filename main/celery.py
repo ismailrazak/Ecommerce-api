@@ -10,8 +10,8 @@ app.config_from_object("django.conf:settings", namespace="CELERY")
 app.conf.beat_schedule = {
     "hot_deals_task": {
         "task": "products.tasks.hot_deals_task",
-        "schedule": timedelta(seconds=60*60),
-    #"options": {"queue": "hot_deals_queue"},
+        "schedule": timedelta(seconds=60 * 60),
+        # "options": {"queue": "hot_deals_queue"},
     },
 }
 app.autodiscover_tasks()

@@ -7,5 +7,4 @@ class ProductDocumentSerializer(DocumentSerializer):
 
     class Meta:
         document = ProductDocument
-        fields = ['name','description','category','price']
-
+        fields = ["name", "description", "category", "price"]

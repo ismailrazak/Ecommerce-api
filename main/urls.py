@@ -14,27 +14,28 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from allauth.account.views import ConfirmEmailView
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path, include, re_path
+from django.urls import include, path, re_path
 
-from accounts.views import LoginPage, GoogleLogin, GoogleLoginCallback
+from accounts.views import GoogleLogin, GoogleLoginCallback, LoginPage
 
 api_urlpatterns = [
-    path("products/",include('products.urls')),
-    path("cart/",include('cart.urls')),
-    path("",include('search.urls')),
+    path("products/", include("products.urls")),
+    path("cart/", include("cart.urls")),
+    path("", include("search.urls")),
 ]
 
 auth_urlpatterns = [
-    path("",include('accounts.urls')),
-    path("session_login/",include("rest_framework.urls")),
-path("", include("dj_rest_auth.urls")),
-    #path('', include('dj_rest_auth.registration.urls')),
-path("google/login/", LoginPage.as_view(), name="login"),
-path("google/", GoogleLogin.as_view(), name="google_login"),
+    path("", include("accounts.urls")),
+    path("session_login/", include("rest_framework.urls")),
+    path("", include("dj_rest_auth.urls")),
+    # path('', include('dj_rest_auth.registration.urls')),
+    path("google/login/", LoginPage.as_view(), name="login"),
+    path("google/", GoogleLogin.as_view(), name="google_login"),
     path(
         "google/callback/",
         GoogleLoginCallback.as_view(),
@@ -50,10 +51,9 @@ urlpatterns = [
         name="account_confirm_email",
     ),
     path("admin/", admin.site.urls),
-    path("auth/",include(auth_urlpatterns)),
-    path("",include(api_urlpatterns)),
+    path("auth/", include(auth_urlpatterns)),
+    path("", include(api_urlpatterns)),
 ]
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-

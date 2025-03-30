@@ -7,27 +7,29 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('products', '0005_review_ai_review'),
+        ("products", "0005_review_ai_review"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='review',
-            options={'ordering': ['-timestamp']},
+            name="review",
+            options={"ordering": ["-timestamp"]},
         ),
         migrations.RemoveField(
-            model_name='review',
-            name='ai_review',
+            model_name="review",
+            name="ai_review",
         ),
         migrations.AddField(
-            model_name='product',
-            name='ai_review',
+            model_name="product",
+            name="ai_review",
             field=models.TextField(blank=True),
         ),
         migrations.AddField(
-            model_name='review',
-            name='timestamp',
-            field=models.DateTimeField(auto_now_add=True, default=django.utils.timezone.now),
+            model_name="review",
+            name="timestamp",
+            field=models.DateTimeField(
+                auto_now_add=True, default=django.utils.timezone.now
+            ),
             preserve_default=False,
         ),
     ]

@@ -9,9 +9,11 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
+
 import os
 from datetime import timedelta
 from pathlib import Path
+
 import dj_database_url
 from decouple import config
 
@@ -22,14 +24,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-1!gk#a74l@w3^li^%1rnl8nkhpur-#sfu25d%@00zh!lj%ceu!"
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
-
+# deployment checklist
+DEBUG = config("DEBUG", cast=bool, default=False)
+SECRET_KEY = config("SECRET_KEY")
+SECURE_SSL_REDIRECT = config("SECURE_SSL_REDIRECT", cast=bool, default=False)
+SECURE_HSTS_SECONDS = config("SECURE_HSTS_SECONDS", default=2592000)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = config(
+    "SECURE_HSTS_INCLUDE_SUBDOMAINS", cast=bool, default=True
+)
+SECURE_HSTS_PRELOAD = config("SECURE_HSTS_PRELOAD", cast=bool, default=True)
+SESSION_COOKIE_SECURE = config("SESSION_COOKIE_SECURE", cast=bool, default=True)
+CSRF_COOKIE_SECURE = config("CSRF_COOKIE_SECURE ", cast=bool, default=True)
+CSRF_TRUSTED_ORIGINS = ["https://github-pull-request-reviewer-api.onrender.com/*"]
+ALLOWED_HOSTS = ["github-pull-request-reviewer-api.onrender.com", "127.0.0.1"]
 
 # Application definition
 
@@ -40,36 +47,36 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    #local
+    # local
     "accounts",
     "products",
     "cart",
     "search",
     # 3rd party
     "rest_framework",
-'django_cleanup.apps.CleanupConfig',
-'django_filters',
+    "django_cleanup.apps.CleanupConfig",
+    "django_filters",
     "django_elasticsearch_dsl",
-"django_elasticsearch_dsl_drf",
-'django.contrib.sites',
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
-    'dj_rest_auth.registration',
-'rest_framework.authtoken',
-'allauth.socialaccount.providers.google'
-
+    "django_elasticsearch_dsl_drf",
+    "django.contrib.sites",
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "dj_rest_auth.registration",
+    "rest_framework.authtoken",
+    "allauth.socialaccount.providers.google",
 ]
 SITE_ID = 1
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "allauth.account.middleware.AccountMiddleware"
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 ROOT_URLCONF = "main.urls"
@@ -154,52 +161,62 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
-#django conf
-AUTH_USER_MODEL = 'accounts.User'
+# django conf
+AUTH_USER_MODEL = "accounts.User"
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 
-#elastic search conf
-ELASTICSEARCH_DSL={
+# elastic search conf
+ELASTICSEARCH_DSL = {
     "default": {
-        "hosts": "http://elasticsearch:9200"
+        "hosts": config("ELASTIC_SEARCH_URL", default="http://elasticsearch:9200")
     }
 }
-#rest framework conf
+# rest framework conf
 REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 100,
-'DEFAULT_AUTHENTICATION_CLASSES': (
-        'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
-'rest_framework.authentication.SessionAuthentication',
-    )
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
+    "PAGE_SIZE": 100,
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "dj_rest_auth.jwt_auth.JWTCookieAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+    ),
 }
 
-#celery conf
+STATIC_ROOT = BASE_DIR / "staticfiles"
+# celery conf
 CELERY_ACCEPT_CONTENT = ["application/json"]
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_RESULT_EXPIRES = 60 * 60 * 24
-CELERY_BROKER_URL = config("REDIS_URL",default="redis://redis:6379")
-CELERY_RESULT_BACKEND = config("REDIS_URL",default="redis://redis:6379")
+CELERY_BROKER_URL = config("REDIS_URL", default="redis://redis:6379")
+CELERY_RESULT_BACKEND = config("REDIS_URL", default="redis://redis:6379")
 
 
-#cache conf
+# cache conf
 
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.redis.RedisCache",
         "LOCATION": config("REDIS_URL", default="redis://redis:6379"),
-"KEY_PREFIX": "ecommerce",
+        "KEY_PREFIX": "ecommerce",
     }
 }
 
+# whitenoise conf
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
-#all auth conf
+# all auth conf
 ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_USERNAME_REQUIRED = True
 ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_ADAPTER = 'accounts.adapter.CustomAccountAdapter'
+ACCOUNT_ADAPTER = "accounts.adapter.CustomAccountAdapter"
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 LOGIN_URL = "/products"
@@ -223,7 +240,7 @@ SOCIALACCOUNT_PROVIDERS = {
         },
     }
 }
-#email conf
+# email conf
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
@@ -232,7 +249,7 @@ EMAIL_HOST_USER = config("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
 
 
-#jwt conf
+# jwt conf
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=7),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=17),
@@ -246,7 +263,8 @@ REST_AUTH = {
     "JWT_AUTH_HTTPONLY": False,
 }
 
-#logging conf
+
+# logging conf
 # LOGGING = {
 #     'version': 1,
 #     'disable_existing_loggers': False,

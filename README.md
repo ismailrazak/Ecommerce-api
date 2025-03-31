@@ -11,7 +11,7 @@ A full-featured e-commerce API with Razorpay payments, ElasticSearch for fuzzy s
   
 - **Product Management**
   - Product listings with images
-  - Product reviews and ratings
+  - Product reviews with AI summaries
   - Hot deals with automatic refreshing via Celery
 
 - **Search Capabilities**
@@ -27,18 +27,12 @@ A full-featured e-commerce API with Razorpay payments, ElasticSearch for fuzzy s
 - **Payment Processing**
   - Secure Razorpay integration
   - Payment status handling and webhooks
-  
-- **Performance Optimization**
-  - Redis caching for frequently accessed data
-  - Celery background tasks for non-blocking operations
-  - Optimized database queries
 
 - **AI-Powered Features**
   - Review summaries powered by Gemini 2.0 Flash
-  - Intelligent product recommendations
   - Sentiment analysis on customer reviews
 
-## Fuzzysearch examples
+## Fuzzysearch example
 
 ### Request
 ```http
@@ -80,7 +74,7 @@ GET http://127.0.0.1:8000/product_search/?search=electroncs
     ]
 ```      
 
-## Fuzzysearch examples
+## Auto Complete example
 
 ### Request
 ```http

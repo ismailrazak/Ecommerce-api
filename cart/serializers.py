@@ -1,7 +1,6 @@
 from rest_framework import serializers
 
 from cart.models import Cart, ProductQuantity
-from products.serializers import CustomerProductSerializer
 
 
 class ProductQuantitySerializer(serializers.ModelSerializer):
@@ -20,7 +19,9 @@ class ProductQuantitySerializer(serializers.ModelSerializer):
 
 
 class CartSerializer(serializers.ModelSerializer):
-    product = serializers.SerializerMethodField()
+    product = ProductQuantitySerializer(
+        many=True, read_only=True, source="product_quantity"
+    )
 
     class Meta:
         model = Cart
@@ -30,12 +31,3 @@ class CartSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
         data["user"] = instance.user.username
         return data
-
-    def get_product(self, obj):
-        cart_items = obj.product_quantity.all()
-        return ProductQuantitySerializer(
-            cart_items, many=True, context={"request": self.context["request"]}
-        ).data
-
-
-# todo replace serializermethod with product quantity serializer

@@ -1,4 +1,3 @@
-from http.client import HTTPResponse
 from urllib.parse import urljoin
 
 import requests
@@ -26,6 +25,10 @@ from cart.models import Cart
 
 
 class LoginPage(View):
+    """
+    This holds th google signup link since i dont have a frontend.
+    """
+
     def get(self, request, *args, **kwargs):
         return render(
             request,
@@ -38,6 +41,10 @@ class LoginPage(View):
 
 
 class CustomGoogleOAuth2Client(OAuth2Client):
+    """
+    using a custom google oauth clinet cause of a bug .
+    """
+
     def __init__(
         self,
         request,
@@ -71,6 +78,11 @@ class GoogleLogin(SocialLoginView):
 
 
 class GoogleLoginCallback(APIView):
+    """
+    gives access token in return for a code google generates. also creates a
+    cart for the user.
+    """
+
     def get(self, request, *args, **kwargs):
 
         code = request.GET.get("code")
@@ -124,7 +136,7 @@ class CustomerRegisterView(RegisterView):
         user = self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         data = self.get_response_data(user)
-
+        # adding these 3 lines below for adding cart.
         customer_group = Group.objects.get(name="customers")
         user.groups.add(customer_group)
         Cart.objects.create(user=user)

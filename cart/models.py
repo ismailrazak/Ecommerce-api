@@ -20,7 +20,9 @@ class ProductQuantity(models.Model):
     product = models.ForeignKey("products.Product", models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
     added_on = models.DateTimeField(auto_now=True)
-    total_price = models.FloatField(blank=True, null=True)
+    total_price = models.DecimalField(
+        blank=True, null=True, max_digits=10, decimal_places=2
+    )
 
     class Meta:
         constraints = [

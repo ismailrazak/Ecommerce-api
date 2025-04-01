@@ -30,11 +30,13 @@ class Product(models.Model):
     )
     name = models.CharField(max_length=400)
     description = models.TextField()
-    price = models.FloatField()
+    price = models.DecimalField(max_digits=10, decimal_places=2)
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
-    discount_percentage = models.FloatField(blank=True, null=True)
-    discounted_price = models.FloatField(blank=True, null=True)
+    discount_percentage = models.PositiveIntegerField(blank=True, null=True)
+    discounted_price = models.DecimalField(
+        blank=True, null=True, max_digits=10, decimal_places=2
+    )
     sold_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -59,8 +61,8 @@ class Product(models.Model):
 
     def save(self, *args, **kwargs):
         if self.discount_percentage:
-            discount = (self.discount_percentage / 100) * (self.price)
-            self.discounted_price = self.price - discount
+            discount = (self.discount_percentage / 100) * (float(self.price))
+            self.discounted_price = float(self.price) - discount
         super().save(*args, **kwargs)
 
     def __str__(self):

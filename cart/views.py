@@ -1,13 +1,7 @@
 from urllib.parse import urljoin
 
 import razorpay
-import requests
-from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
-from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from decouple import config
-from dj_rest_auth.registration.views import SocialLoginView
-from django.conf import settings
-from django.db import transaction
 from django.db.models import F, Sum
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
@@ -43,12 +37,12 @@ class CartItemRemoveAllView(APIView):
     def post(self, request, pk=None):
         products = []
         cart = self.request.user.cart
-        if not cart.products.all().exists():
+        product_quantities = cart.product_quantity.all()
+        if not product_quantities:
             return Response(
                 {"error": "Your cart is already empty."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        product_quantities = cart.product_quantity.all()
         for product_quantity in product_quantities:
             product = product_quantity.product
             products.append(product)
@@ -65,14 +59,14 @@ class CartBuyAllView(APIView):
     renderer_classes = (TemplateHTMLRenderer,)
 
     def get(self, request, pk=None):
-        products = []
         create_orders = []
         cart = self.request.user.cart
-        if not cart.products.all().exists():
+        product_quantities = cart.product_quantity.all()
+        if not product_quantities:
             return Response(
                 {"error": "Your cart is empty."}, status=status.HTTP_400_BAD_REQUEST
             )
-        product_quantities = cart.product_quantity.all()
+
         total_price = product_quantities.aggregate(Sum("total_price"))[
             "total_price__sum"
         ]

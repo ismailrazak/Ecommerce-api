@@ -85,6 +85,7 @@ class SellerProductSerializer(ModelSerializer):
             "description",
             "price",
             "discount_percentage",
+            "discounted_price",
             "stock",
             "created_on",
             "updated_on",
@@ -92,6 +93,7 @@ class SellerProductSerializer(ModelSerializer):
             "uploaded_images",
         )
         extra_kwargs = {"url": {"view_name": "products-detail"}}
+        read_only_fields = ["discounted_price"]
 
     def create(self, validated_data):
         uploaded_images = validated_data.pop("uploaded_images")

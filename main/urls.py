@@ -49,7 +49,7 @@ auth_urlpatterns = [
 urlpatterns = [
     # add the below path to resolve placeholder issue for email confirmation.
     re_path(
-        "^auth/account-confirm-email/(?P<key>[-:\w]+)/$",
+        r"^auth/account-confirm-email/(?P<key>[-:\w]+)/$",
         ConfirmEmailView.as_view(),
         name="account_confirm_email",
     ),

@@ -44,7 +44,11 @@ class CustomerProductViewSet(
     GenericViewSet, RetrieveModelMixin, UpdateModelMixin, ListModelMixin
 ):
     serializer_class = CustomerProductSerializer
-    queryset = Product.objects.all()
+    queryset = (
+        Product.objects.prefetch_related("product_images", "product_reviews__reviewer")
+        .select_related("sold_by")
+        .all()
+    )
     permission_classes = (IsCustomerOrNone,)
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_fields = [

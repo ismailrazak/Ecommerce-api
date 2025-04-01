@@ -36,7 +36,11 @@ SECURE_HSTS_PRELOAD = config("SECURE_HSTS_PRELOAD", cast=bool, default=True)
 SESSION_COOKIE_SECURE = config("SESSION_COOKIE_SECURE", cast=bool, default=True)
 CSRF_COOKIE_SECURE = config("CSRF_COOKIE_SECURE ", cast=bool, default=True)
 # CSRF_TRUSTED_ORIGINS = ["https://github-pull-request-reviewer-api.onrender.com/*"]
-ALLOWED_HOSTS = ["github-pull-request-reviewer-api.onrender.com", "127.0.0.1"]
+ALLOWED_HOSTS = [
+    "github-pull-request-reviewer-api.onrender.com",
+    "127.0.0.1",
+    "localhost",
+]
 
 # Application definition
 
@@ -294,3 +298,13 @@ REST_AUTH = {
 #         },
 #     },
 # }
+
+
+# TODO
+# optimization select_related , db_index, compare
+# google bucket support
+# fix ai prompt
+# use postgres as local db
+# send it live
+# testing
+# add celery testing

@@ -301,7 +301,6 @@ REST_AUTH = {
 
 
 # TODO
-# optimization select_related , db_index, compare
 # google bucket support
 # fix ai prompt
 # use postgres as local db

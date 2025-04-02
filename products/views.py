@@ -4,6 +4,7 @@ import razorpay
 import redis
 from decouple import config
 from django.core.cache import cache
+from django.db import transaction
 from django.db.models import F
 from django.http import JsonResponse
 from django.urls import reverse
@@ -150,31 +151,34 @@ class CustomerProductViewSet(
 
 
 class PaymentHandler(APIView):
+
     def post(self, request, pk=None):
-        update_orders = []
         try:
-            payment_id = request.data.get("razorpay_payment_id", "")
-            razorpay_order_id = request.data.get("razorpay_order_id", "")
-            signature = request.data.get("razorpay_signature", "")
-            params_dict = {
-                "razorpay_order_id": razorpay_order_id,
-                "razorpay_payment_id": payment_id,
-                "razorpay_signature": signature,
-            }
-            result = razorpay_client.utility.verify_payment_signature(params_dict)
-            if result is not None:
-                order = Order.objects.filter(order_id=razorpay_order_id).first()
-                product = order.product
-                order.payment_id = payment_id
-                order.save()
-                product.stock = F("stock") - 1
-                product.save()
-
-                return Response("payment success", status=status.HTTP_200_OK)
-            else:
-                return Response("payment fail", status=status.HTTP_400_BAD_REQUEST)
+            with transaction.atomic():
+                payment_id = request.data.get("razorpay_payment_id", "")
+                razorpay_order_id = request.data.get("razorpay_order_id", "")
+                signature = request.data.get("razorpay_signature", "")
+                params_dict = {
+                    "razorpay_order_id": razorpay_order_id,
+                    "razorpay_payment_id": payment_id,
+                    "razorpay_signature": signature,
+                }
+                result = razorpay_client.utility.verify_payment_signature(params_dict)
+                if result is not None:
+                    order = (
+                        Order.objects.filter(order_id=razorpay_order_id)
+                        .select_related("product")
+                        .first()
+                    )
+                    product = order.product
+                    order.payment_id = payment_id
+                    order.save()
+                    product.stock = F("stock") - 1
+                    product.save()
+                    return Response("payment success", status=status.HTTP_200_OK)
+                else:
+                    return Response("payment fail", status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-
             return Response(
                 "payment exception fail", status=status.HTTP_400_BAD_REQUEST
             )
@@ -254,6 +258,3 @@ class HotDealsView(APIView):
             if serializer:
                 return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
-
-
-# todo add db transaction to both of pays

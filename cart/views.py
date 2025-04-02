@@ -2,6 +2,7 @@ from urllib.parse import urljoin
 
 import razorpay
 from decouple import config
+from django.db import transaction
 from django.db.models import F, Sum
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
@@ -100,26 +101,29 @@ class CartPaymentHandler(APIView):
     def post(self, request, pk=None):
         update_orders = []
         try:
-            payment_id = request.data.get("razorpay_payment_id", "")
-            razorpay_order_id = request.data.get("razorpay_order_id", "")
-            signature = request.data.get("razorpay_signature", "")
-            params_dict = {
-                "razorpay_order_id": razorpay_order_id,
-                "razorpay_payment_id": payment_id,
-                "razorpay_signature": signature,
-            }
-            result = razorpay_client.utility.verify_payment_signature(params_dict)
-            if result is not None:
-                orders = Order.objects.filter(order_id=razorpay_order_id)
-                for order in orders:
-                    order.payment_id = payment_id
-                    update_orders.append(order)
-                Order.objects.bulk_update(update_orders, ["payment_id"])
-                user = orders[0].user
-                user.cart.products.clear()
-                return Response("payment success", status=status.HTTP_200_OK)
-            else:
-                return Response("payment fail", status=status.HTTP_400_BAD_REQUEST)
+            with transaction.atomic():
+                payment_id = request.data.get("razorpay_payment_id", "")
+                razorpay_order_id = request.data.get("razorpay_order_id", "")
+                signature = request.data.get("razorpay_signature", "")
+                params_dict = {
+                    "razorpay_order_id": razorpay_order_id,
+                    "razorpay_payment_id": payment_id,
+                    "razorpay_signature": signature,
+                }
+                result = razorpay_client.utility.verify_payment_signature(params_dict)
+                if result is not None:
+                    orders = Order.objects.filter(
+                        order_id=razorpay_order_id
+                    ).select_related("user")
+                    for order in orders:
+                        order.payment_id = payment_id
+                        update_orders.append(order)
+                    Order.objects.bulk_update(update_orders, ["payment_id"])
+                    user = orders[0].user
+                    user.cart.products.clear()
+                    return Response("payment success", status=status.HTTP_200_OK)
+                else:
+                    return Response("payment fail", status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response(
                 "payment exception fail", status=status.HTTP_400_BAD_REQUEST

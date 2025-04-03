@@ -10,12 +10,14 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+import json
 import os
 from datetime import timedelta
 from pathlib import Path
 
 import dj_database_url
 from decouple import config
+from google.oauth2 import service_account
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -204,9 +206,7 @@ CACHES = {
 
 # whitenoise conf
 STORAGES = {
-    "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
-    },
+    "default": {"BACKEND": "storages.backends.gcloud.GoogleCloudStorage"},
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
@@ -263,6 +263,14 @@ REST_AUTH = {
     "JWT_AUTH_HTTPONLY": False,
 }
 
+# django storages conf
+
+GS_BUCKET_NAME = "ecommerceapi--bucket"
+GS_FILE_OVERWRITE = True
+gs_json_data = json.loads(config("DJANGO_GS_CREDENTIALS"))
+gs_json_data["private_key"] = gs_json_data["private_key"].replace("\\n", "\n")
+GS_CREDENTIALS = service_account.Credentials.from_service_account_info(gs_json_data)
+
 
 # logging conf
 # LOGGING = {
@@ -301,7 +309,6 @@ REST_AUTH = {
 
 
 # TODO
-# google bucket support
 # fix ai prompt
 # use postgres as local db
 # send it live

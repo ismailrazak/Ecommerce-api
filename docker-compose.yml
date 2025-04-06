@@ -12,8 +12,6 @@ services:
       - db
       - elastic_search
       - ai_review_celery_worker
-    environment:
-      - DATABASE_URL=postgres://postgres:postgres@db:5432/postgres
 
   db:
     image: postgres:latest

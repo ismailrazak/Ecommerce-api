@@ -90,7 +90,9 @@ class GoogleLoginCallback(APIView):
         if code is None:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        token_endpoint_url = urljoin("http://localhost:8000", reverse("google_login"))
+        token_endpoint_url = urljoin(
+            "https://web-production-cc964.up.railway.app/", reverse("google_login")
+        )
         response = requests.post(
             url=token_endpoint_url,
             data={

@@ -176,7 +176,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 # elastic search conf
 ELASTICSEARCH_DSL = {
     "default": {
-        "hosts": "https://elasticsearch-9v9z.onrender.com:9200",
+        "hosts": "https://elasticsearch-9v9z.onrender.com",
     }
 }
 # rest framework conf

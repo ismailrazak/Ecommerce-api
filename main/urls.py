@@ -16,6 +16,7 @@ Including another URLconf
 """
 
 from allauth.account.views import ConfirmEmailView
+from dj_rest_auth.registration.views import VerifyEmailView
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
@@ -56,6 +57,11 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("auth/", include(auth_urlpatterns)),
     path("", include(api_urlpatterns)),
+    path(
+        "auth/account-confirm-email/",
+        VerifyEmailView.as_view(),
+        name="account_email_verification_sent",
+    ),
 ]
 
 if settings.DEBUG:

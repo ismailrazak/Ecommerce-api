@@ -176,8 +176,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 # elastic search conf
 ELASTICSEARCH_DSL = {
     "default": {
-        "hosts": "elasticsearch.railway.internal",
-        "http_auth": (config("ELASTIC_USERNAME"), config("ELASTIC_PASSWORD")),
+        "hosts": "https://elasticsearch-production-d8de.up.railway.app:9200",
     }
 }
 # rest framework conf

@@ -73,7 +73,7 @@ class CustomGoogleOAuth2Client(OAuth2Client):
 
 class GoogleLogin(SocialLoginView):
     adapter_class = GoogleOAuth2Adapter
-    callback_url = settings.GOOGLE_OAUTH_CALLBACK_URL
+    callback_url = "https://web-production-cc964.up.railway.app/products"
     client_class = CustomGoogleOAuth2Client
 
 

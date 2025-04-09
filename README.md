@@ -1,5 +1,10 @@
 # E-commerce API Platform
 
+Live Link:
+https://web-production-cc964.up.railway.app/products/
+
+### Note: If a internal server 500 occurs please wait for at least 5 minutes and retry again. this is due to elasticsearch service being shutdown due to inactivity.
+
 A full-featured e-commerce API with Razorpay payments, ElasticSearch for fuzzy search and autocomplete, Redis caching, Celery workers for background tasks, cart system, Google OAuth with JWT authentication, and AI-powered review summaries using Gemini 2.0 Flash.
 
 ## Features

@@ -17,7 +17,7 @@ class GenerateProfileImagePath:
         ext = filename.split(".")[-1]
 
         path = f"media/all_products/{instance.product.name}/images/"
-        name = f"main.{ext}"
+        name = f"{filename}"
         return os.path.join(path, name)
 
 

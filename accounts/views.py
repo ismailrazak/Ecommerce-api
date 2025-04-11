@@ -106,7 +106,7 @@ class GoogleLoginCallback(APIView):
         user = get_user_model().objects.filter(id=user_id).first()
         customer_group = Group.objects.get(name="customers")
         user.groups.add(customer_group)
-        Cart.objects.create(user=user)
+        created, cart = Cart.objects.get_or_create(user=user)
         return Response(response.json())
 
 

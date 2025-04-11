@@ -34,7 +34,8 @@ class ProductQuantity(models.Model):
     def save(self, *args, **kwargs):
         if not self.product.discounted_price:
             price = self.product.price
-        price = self.product.discounted_price
+        else:
+            price = self.product.discounted_price
         self.total_price = price * self.quantity
         super().save(*args, **kwargs)
 

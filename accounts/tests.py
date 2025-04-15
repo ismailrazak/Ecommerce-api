@@ -12,8 +12,6 @@ from rest_framework.test import APIClient, APITestCase
 from cart.models import Cart, ProductQuantity
 from products.models import Order, Product
 
-logger = logging.getLogger("accounts.test")
-
 
 class TestAccountsApp(APITestCase):
 

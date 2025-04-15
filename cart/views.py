@@ -52,7 +52,7 @@ class CartItemRemoveAllView(APIView):
         cart.products.clear()
         return Response(
             {"success": "All Items has been removed successfully."},
-            status=status.HTTP_200_OK,
+            status=status.HTTP_204_NO_CONTENT,
         )
 
 

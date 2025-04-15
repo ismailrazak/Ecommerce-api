@@ -13,7 +13,11 @@ urlpatterns = [
         views.ProductImageView.as_view(),
         name="product_image_detail",
     ),
-    path("product_review_create/<str:pk>", views.ProductReviewCreateView.as_view()),
+    path(
+        "product_review_create/<str:pk>",
+        views.ProductReviewCreateView.as_view(),
+        name="product_review_create",
+    ),
     path(
         "product_review/<str:pk>",
         views.ProductReviewView.as_view(),

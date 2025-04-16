@@ -1,3 +1,5 @@
+![coverage.svg](coverage.svg)
+
 # E-commerce API Platform
 
 Live Link:

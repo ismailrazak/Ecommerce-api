@@ -22,7 +22,7 @@ class GenerateProfileImagePath:
         ext = filename.split(".")[-1]
 
         path = f"media/profiles/images/{instance.username}_{instance.id}"
-        name = f"main.{ext}"
+        name = f"{filename}"
         return os.path.join(path, name)
 
 

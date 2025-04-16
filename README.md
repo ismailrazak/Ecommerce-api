@@ -1,3 +1,5 @@
+![coverage.svg](coverage.svg)
+
 # E-commerce API Platform
 
 A full-featured e-commerce API with Razorpay payments, ElasticSearch for fuzzy search and autocomplete, Redis caching, Celery workers for background tasks, cart system, Google OAuth with JWT authentication, and AI-powered review summaries using Gemini 2.0 Flash.
